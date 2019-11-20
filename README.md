@@ -5,7 +5,7 @@ An [Artstation](https://www.artstation.com/)  crawler made specific for download
 ### Requirements
 * **Python 3**
 * **Selenium**: `pip install selenium`
-* **Latest Chrome and [ChromeDriver](https://chromedriver.chromium.org/downloads)
+* **Latest Chrome and [ChromeDriver](https://chromedriver.chromium.org/downloads)** : Unzip and put in the same directory as ArtstationCrawler.py.
 ### How to use
 #### Artist mode
 `python ArtstationCrawler.py -a [Artist username]` or `python ArtstationCrawler.py --artist [Artist username]`
