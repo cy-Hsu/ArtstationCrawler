@@ -133,9 +133,9 @@ def downloader(titles, images):
                 if len(project) is not 1:
                     imgName = img.split('/')[-1]
                     if '.jpg' in imgName: 
-                        imageName = imageName.split('.jpg')[0] + '.jpg'
-                    elif '.gif' in imageName:
-                        imageName = imageName.split('.gif')[0] + '.gif'
+                        imgName = imgName.split('.jpg')[0] + '.jpg'
+                    elif '.gif' in imgName:
+                        imgName = imgName.split('.gif')[0] + '.gif'
                 with open(imgName, 'wb') as outfile:
                     outfile.write(r.content)
             except Exception as e:
