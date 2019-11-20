@@ -2,21 +2,22 @@
 An Selenium based Artstation crawler made by CY Hsu
 """
 import os
+import argparse
 import selenium
 from selenium import webdriver
 from selenium import common
 from selenium.webdriver.support.ui import WebDriverWait
 import requests
 import re
-
 #Webdriver setting
 opt = webdriver.ChromeOptions()
 opt.add_argument("disable-extensions")
 driver = webdriver.Chrome(chrome_options=opt)
 #crawler setting
 ARTSTATION = 'https://www.artstation.com/'
-ARTIST = 'eventrue'
-mode = 'artist'
+ARTIST = ''
+SEARCH = ''
+MODE = ''
 #page setting
 total_scrolls = 5000
 current_scrolls = 0
@@ -113,14 +114,38 @@ def grabber(links):
             os.chdir('..')
     print('finish')
 
+def parse_arguments():
+    global MODE, ARTIST, SEARCH
+    try:
+        parser = argparse.ArgumentParser()
+        modeGroup = parser.add_mutually_exclusive_group()
+        modeGroup.add_argument('-a', '--artist')
+        modeGroup.add_argument('-s', '--search')
+        args = parser.parse_args()
+
+        ARTIST = args.artist
+        SEARCH = args.search
+        availableModes = ['artist', 'search']
+        for idx, arg in enumerate([ARTIST, SEARCH]):
+            if arg is not None:
+                MODE = availableModes[idx]
+
+    except:
+        driver.close()
+
 def main():
-    url, dir = UrlGenerator(mode)
+    parse_arguments()
+    url, dir = UrlGenerator(MODE)
+    print('fetching artworks in %s' % url)
+    dir = os.path.join('downloads', dir)
     if os.path.exists(dir) is not True:
-        os.mkdir(dir)
+        os.makedirs(dir)
     os.chdir(dir)
     driver.get(url)
     projects = getlinks()
     grabber(projects)
+    driver.close()
 
 if __name__ == '__main__':
+    #parse_arguments()
     main()
