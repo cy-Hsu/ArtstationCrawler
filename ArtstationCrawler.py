@@ -26,8 +26,8 @@ scroll_time = 3
 def UrlGenerator(mode):
     if mode is 'artist':
         return ARTSTATION + ARTIST, ARTIST
-    elif mode is 'trending':
-        return ARTSTATION + 'artwork?sorting=trending', 'Trending'
+    elif mode is 'search':
+        return ARTSTATION + 'search?q=' + SEARCH, SEARCH
 
 def check_height():
     new_height = driver.execute_script("return document.body.scrollHeight")
@@ -51,7 +51,14 @@ def scroll():
 
     return
 
-def getlinks():
+def _getlinksArtists():
+    try:
+        albums = driver.find_element_by_xpath('div[@class="portfolio-albums"]')
+        if len(albums) is not 0:
+            driver.get(driver.current_url + '/albums/all')
+    except:
+        pass
+    print('fetching artworks in %s' % driver.current_url)
     scroll()
     try:
         links = driver.find_elements_by_xpath('//a[@class="project-image"]')
@@ -61,11 +68,28 @@ def getlinks():
         print('no links fetched')
     return links
 
-def grabber(links):
+def _getlinksSearch():
+    print('fetching artworks in %s' % driver.current_url)
+    scroll()
+    try:
+        links = driver.find_elements_by_xpath('//a[@class="gallery-grid-link"]')
+        print('fetched %d links' % len(links))
+    except selenium.common.exceptions.NoSuchElementException:
+        print('no links fetched')
+    return links
+
+def getlinks(mode):
+    if mode is 'artist':
+        links = _getlinksArtists()
+    elif mode is 'search':
+        links = _getlinksSearch()
+    return links
+
+def image_finder(links):
     titles = []
     images = []
-    nImg = 0
     urls = []
+    nImg = 0
     for link in links:
         url = link.get_attribute('href')
         urls.append(url)
@@ -87,10 +111,13 @@ def grabber(links):
             nImg += len(imgSrcs)
         except  selenium.common.exceptions.NoSuchElementException:
             print('no title/images fetched')
-        driver.back()
+        #driver.back()
     assert len(titles) == len(images), 'unmatched projects and titles'
+    print('found %d projects with %d images...' % (len(titles), nImg))
+    return titles, images
+
+def downloader(titles, images):
     #downloading
-    print('downloading %d projects with %d images...' % (len(titles), nImg))
     for idx in range(len(images)):
         titles[idx] = re.sub('[^A-Za-z0-9]+', ' ', titles[idx])
         project = images[idx]
@@ -120,11 +147,11 @@ def parse_arguments():
         parser = argparse.ArgumentParser()
         modeGroup = parser.add_mutually_exclusive_group()
         modeGroup.add_argument('-a', '--artist')
-        modeGroup.add_argument('-s', '--search')
+        modeGroup.add_argument('-s', '--search', nargs='+')
         args = parser.parse_args()
 
         ARTIST = args.artist
-        SEARCH = args.search
+        SEARCH = ' '.join(args.search)
         availableModes = ['artist', 'search']
         for idx, arg in enumerate([ARTIST, SEARCH]):
             if arg is not None:
@@ -136,14 +163,14 @@ def parse_arguments():
 def main():
     parse_arguments()
     url, dir = UrlGenerator(MODE)
-    print('fetching artworks in %s' % url)
     dir = os.path.join('downloads', dir)
     if os.path.exists(dir) is not True:
         os.makedirs(dir)
     os.chdir(dir)
     driver.get(url)
-    projects = getlinks()
-    grabber(projects)
+    projects = getlinks(MODE)
+    titles, images = image_finder(projects)
+    downloader(titles, images)
     driver.close()
 
 if __name__ == '__main__':
