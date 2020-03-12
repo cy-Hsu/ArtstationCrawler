@@ -14,7 +14,7 @@ An [Artstation](https://www.artstation.com/)  crawler made specific for download
 ### Examples
 #### Artist mode
 ```
-> python ArtstationCrawler.py - [cyhsu]
+> python ArtstationCrawler.py -a [cyhsu]
 Fetching artworks from https://www.artstation.com/cyhsu
 Fetched 4 links.
 Found 4 projects with 8 images...
